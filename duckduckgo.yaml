@@ -1,0 +1,9 @@
+- set_window_size: '1366x900'
+- get: 'http://duckduckgo.com/'
+- click: 'q'
+- send_keys: 'test'
+- submit:
+- save_screenshot: 'screen.png'
+- foreach:
+    - class: 'result__a'
+    - print_href: 'a'
