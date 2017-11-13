@@ -1,16 +1,443 @@
 #!/usr/bin/env python3
+'''
+wal - web automation layer.
+Simple web automation using yaml syntax.
+'''
 
 import argparse
 import os
 import sys
 import yaml
-
-# Import web test suite
-# docs: http://selenium-python.readthedocs.io/
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import *
 from selenium.webdriver.common.action_chains import ActionChains
+
+
+# Configuration for now
+DEFAULT = {'homepage': 'http://about:blank',
+           'screen_width': '1366',
+           'screen_height': '768'}
+
+
+class Interpreter(object):
+    '''
+    interprets commands from scripts and executes
+    the corresponding functions
+    '''
+
+    def __init__(self, driver):
+        '''
+        sets up interpreter
+
+        :param driver: - Selenium driver to use.
+        '''
+
+        self.driver = driver
+        self.select = None
+        self.commands = self.get_commands()
+
+
+    def get_commands(self):
+        '''
+        creates a dictionary of command strings to functions
+        '''
+
+        return {'back': back,
+                'backward': back,
+                'backwards': back,
+                'clear': clear,
+                'click': click,
+                'current_url': current_url,
+                'deselect': deselect,
+                'forward': forward,
+                'forwards': forward,
+                'foreach': foreach,
+                'get': get,
+                'go': get,
+                'save_screenshot': save_screenshot,
+                'screenshot': save_screenshot,
+                'select': select,
+                'select_by_class': select_by_class,
+                'select_by_id': select_by_id,
+                'select_by_name': select_by_name,
+                'select_by_tagname': select_by_tagname,
+                'select_by_value': select_by_value,
+                'select_by_xpath': select_by_xpath,
+                'send_keys': send_keys,
+                'set_window_size': set_window_size,
+                'submit': submit}
+
+
+    def execute(self, command):
+        '''
+        executes wal command and return string to be logged
+
+        :param commands: str or list - commands to be ran
+        '''
+
+        # get command
+        for item in command.keys():
+            com = item
+
+        # get argument
+        argument = ''
+        for item in command.values():
+            argument = item
+
+        # connect yaml commands to selenium driver commands
+        if com in self.commands.keys():
+            # execute command  with argument and return string for logging
+            return self.commands[com](self, argument)
+
+
+def back(wal, argument):
+    '''
+    go back one page
+    '''
+
+    wal.driver.back()
+    return 'browser went back one page'
+
+
+def clear(wal, argument):
+    '''
+    clears the driver's selection
+    '''
+
+    wal.driver.clear()
+    wal.select = None
+
+    return 'selection cleared'
+
+
+def click(wal, argument):
+    '''
+    clicks argument or previously selected element
+    if no argument was given
+    '''
+
+    if type(argument) == list:
+        argument = argument[0]
+
+    if type(argument) == str:
+
+        # click selected item if no argument is given
+        if len(argument) == 0:
+            wal.driver.click(wal.select)
+
+        wal.select = select_element(wal, argument)
+        wal.driver.click(wal.select)
+
+    return 'clicked %s' % wal.select
+
+
+def current_url(wal, argument):
+    '''
+    returns current url
+    '''
+
+    return 'currently at: %s' % wal.driver.current_url
+
+
+def deselect(wal, argument):
+    '''
+    deselects selections
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.driver.dselect_all()
+
+    return 'delected selections'
+
+
+def foreach(wal, argument):
+    '''
+    a statement used to iterate elements
+    '''
+    return_string = ''
+
+    if type(argument) is list:
+        for arg in argument:
+            key = list(arg.keys())[0]
+            value = list(arg.values())[0]
+
+            if key == 'class':
+                wal.select = wal.driver.find_element_by_class_name(value)
+                class_name = value
+
+            if key == 'print_href':
+                print_href = True
+
+        if class_name:
+            if print_href:
+
+                elements = wal.driver.find_elements_by_class_name(class_name)
+
+                for element in elements:
+                    return_string += '\n' + element.get_attribute('href')
+
+                return return_string
+
+
+def forward(wal, argument):
+    '''
+    go forward one page
+    '''
+
+    wal.driver.forward()
+    return 'browser went forward one page'
+
+
+def get(wal, argument):
+    '''
+    loads a web page
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+    if type(argument) is str:
+        wal.driver.get(argument)
+
+    return 'loaded %s' % argument
+
+
+def save_screenshot(wal, argument):
+    '''
+    saves a screenshot named by the argument
+
+    :param argument: str - file name
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.driver.save_screenshot(argument)
+
+    return 'saved a screenshot named %s' % argument
+
+
+def select(wal, argument):
+    '''
+    select element by id, class, or name
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        if argument[:1] == '#':
+            wal.select = wal.driver.find_element_by_id(argument[1:])
+            return 'selected %s by id' % argument
+        elif argument[:1] == '.':
+            wal.select = wal.driver.find_element_by_class_name(argument[1:])
+            return 'selected %s by class' % argument
+        else:
+            wal.select = wal.driver.find_element_by_name(argument)
+            return 'selected %s by name' % argument
+    else:
+        return 'no argument %s to select' % argument
+
+
+def select_by_class(wal, argument):
+    '''
+    select element by class
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_class_name(argument)
+
+    return 'selected %s by class' % argument
+
+
+def select_by_id(wal, argument):
+    '''
+    select by id
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_id(argument)
+
+    return 'selected %s by id' % argument
+
+
+def select_by_tagname(wal, argument):
+    '''
+    select by tagname
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_tagname(argument)
+
+    return 'selected %s by tagname' % argument
+
+
+def select_by_value(wal, argument):
+    '''
+    select by value
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_value(argument)
+
+    return 'selected %s by value' % argument
+
+
+def select_by_xpath(wal, argument):
+    '''
+    select by xpath
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_xpath(argument)
+
+    return 'selected %s by xpath' % argument
+
+
+def set_window_size(wal, argument):
+    '''
+    sets browser's windows size by string or list
+    '''
+
+    if type(argument) is list:
+        wal.driver.set_window_size(int(argument[0]),
+                               int(argument[1]))
+        return 'set window size to %s by %s.' % (width, height)
+
+    if type(argument) is str:
+        seperator = argument.find('x')
+        width = argument[0:seperator]
+        height = argument[-(seperator - 1):]
+        wal.driver.set_window_size(int(width), int(height))
+        return 'set window size to %s by %s.' % (width, height)
+
+
+def send_keys(wal, argument):
+    '''
+    send keys to seleceted element
+    '''
+
+    # TODO: add support for special keys
+    if type(argument) is list:
+        for arg in argument:
+            wal.select.send_keys(argument)
+
+    if type(argument) is str:
+        wal.select.send_keys(argument)
+
+    return 'sent %s to %s' % (argument, wal.select)
+
+
+def select(wal, argument):
+    '''
+    select an element by id, class or name
+    '''
+
+    if argument[:1] == '#':
+        return wal.driver.find_element_by_id(argument[1:])
+    elif argument[:1] == '.':
+        return wal.driver.find_element_by_class(argument[1:])
+    else:
+        return wal.driver.find_element_by_name(argument)
+
+
+def select_by_name(wal, argument):
+    '''
+    select an element by name
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = wal.driver.find_element_by_name(argument)
+
+    return 'selected element %s by name' % argument
+
+
+def submit(wal, argument):
+    '''
+    execute the submit function of an element
+    useful for submitting forms
+    '''
+
+    if type(argument) is None:
+        if type(wal.select) is None:
+            print('Error: submit: Nothing is selected.')
+        try:
+            wal.select.submit()
+        except NoSuchElementException as error:
+            return str(error)
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        wal.select = select_element(wal, argument)
+        try:
+            wal.select.submit()
+        except NoSuchElementException as error:
+            return str(error)
+    try:
+        wal.select.submit()
+    except NoSuchElementException as error:
+        return str(error)
+
+
+def select_element(wal, argument):
+    '''
+    select element by id, class, or name
+    '''
+
+    if type(argument) is list:
+        argument = argument[0]
+
+    if type(argument) is str:
+        if argument[:1] == '#':
+            return wal.driver.find_element_by_id(argument[1:])
+        elif argument[:1] == '.':
+            return wal.driver.find_element_by_class_name(argument[1:])
+        else:
+            return wal.driver.find_element_by_name(argument)
+    else:
+        return None
+
+
+def inspect(element):
+    '''returns information about an html element:
+         - tag
+         - name
+         - id
+         - class
+         - selenium id
+    '''
+    
+    return ('        tag: <%s>', element.tag_name + 
+            '       name: %s', element.get_attribute('name') + 
+            '         id: %s', element.get_attribute('id') +
+            '      class: %s', element.get_attribute('class') +
+            'selenium_id: %s', element.id)
+
 
 class Wal(object):
     '''
@@ -20,258 +447,124 @@ class Wal(object):
         '''
         Set up wal. Use -h to see available commands.
         '''
-        parser = argparse.ArgumentParser(description='wal - web' +
-                                         'automation layer.\n' +
-                                         'Simple web automation ' +
-                                         'using yaml syntax.')
-        parser.add_argument('input_files',
-                            default=sys.stdin,
-                            nargs='*')
-        self.args = parser.parse_args()
-        self.scripts = []
-        for script_name in self.args.input_files:
-            self.scripts.append({script_name: self.load_script(script_name)})
-        self.select = None
 
+        self.args = self.parse_arguments()
+        self.logger = self.setup_logger()
+        self.driver = self.setup_web_driver()
+        self.scripts = self.load_all_scripts()
+        self.interpreter = Interpreter(self.driver)
+
+
+    def parse_arguments(self):
+        '''
+        Parses command line arguments and returns the arguments
+
+        for more information:
+        https://docs.python.org/3/library/argparse.html
+        '''
+
+        # Define arguments
+        parser = argparse.ArgumentParser(description=__doc__)
+        argument = parser.add_argument
+        argument('input_files',
+                 default=sys.stdin,
+                 nargs='*')
+        argument('--verbose', '-v', action='count')
+
+        return parser.parse_args()
+
+
+    def setup_logger(self):
+        '''
+        return a logger with default values
+        '''
+
+        if self.args.verbose:
+            if self.args.verbose >= 3:
+                logging.basicConfig(level=logging.DEBUG)
+            elif self.args.verbose == 2:
+                logging.basicConfig(level=logging.INFO)
+            elif self.args.verbose == 1:
+                logging.basicConfig(level=logging.WARNING)
+        else:
+            logging.basicConfig(level=logging.CRITICAL)
+
+        return logging.getLogger('wal')
+
+
+    def setup_web_driver(self):
+        '''
+        returns a selenium web driver using PhantomJS and sensible defaults
+
+        for more information:
+        http://selenium-python.readthedocs.io/
+        '''
+
+        driver = webdriver.PhantomJS(service_log_path=os.path.devnull)
+        driver.get(DEFAULT['homepage'])
+        driver.set_window_size(DEFAULT['screen_width'],
+                               DEFAULT['screen_height'])
+        actions = ActionChains(driver)
+        driver.click = actions.click
+
+        return driver
+
+
+    def load_all_scripts(self):
+        '''
+        return dict object of scripts
+        '''
+
+        scripts = []
+        
+        for script_name in self.args.input_files:
+            scripts.append({script_name: self.load_script(script_name)})
+
+        return scripts
+        
 
     def load_script(self, script):
-        commands = []
-        line_num = 0
+        '''
+        loads the scripts and interprets the yaml content
+        '''
+
         with open(script, 'r') as stream:
             try:
-                line_num += 1
-                commands.append(yaml.load(stream))
-            except yaml.YAMLError as exc:
-                print(exc)
+                commands = yaml.load(stream)
+            except yaml.YAMLError as error:
+                self.logger.error(error)
 
         return commands
 
 
-    def print_scripts(self):
-        for script in self.scripts:
-            line_num = 0
-            for script_name in script.keys():
-                print('-'*80)
-                print(script_name)
-                print('-'*80)
-            for commands in script.values():
-                if len(commands) > 0:
-                    for line in commands[0]:
-                        line_num += 1
-                        print(line_num, '|', line)
-
-
-    def interpret(self, line):
-        for key in line.keys():
-            command = key
-        for value in line.values():
-            argument = value
-        print(command, ':\t', argument)
-        if command == 'set_window_size':
-            self.driver.set_window_size('500','500')
-        elif command == 'get':
-            self.driver.get(argument[0])
-            the_d = self.driver.get
-            print(the_d)
-            print('now at ', self.driver.current_url)
-        elif command == 'save_screenshot':
-            self.driver.save_screenshot(argument[0])
-
-    def print_element(self):
-        print('tag_name: ', self.select.tag_name)
-        print('name: ', self.select.get_attribute('name'))
-        print('id: ', self.select.get_attribute('id'))
-        print('class: ', self.select.get_attribute('class'))
-        print('selenium_id: ', self.select.id)
-
-
     def run(self):
-        for script in self.scripts:
-            line_num = 0
-            for script_name in script.keys():
-                print('-'*80)
-                print(script_name)
-                print('-'*80)
-            try:
-                for commands in script.values():
-                    # set up drive
-                    driver = webdriver.PhantomJS(service_log_path=os.path.devnull)
-                    # set default home page
-                    driver.get('http://about:blank')
-                    # set default screen size
-                    driver.set_window_size(1366,768)
-                    # if commands empty, continue
-                    if len(commands) == 0:
-                        break
-                    # interpret commands
-                    for line in commands[0]:
-                        line_num += 1
-                        print(line_num, '|', end='')
-                        if type(line) is str:
-                            command = key
-                        if type(line) is dict:
-                            for key in line.keys():
-                                command = key
-                            for value in line.values():
-                                argument = value
-                        # print command
-                        print(' - ' + command + ':', end='')
-                        # only print argument if it's a string
-                        if type(argument) is str:
-                            print('\t\'' + argument + '\'', end='')
-                        print()  # print new line
-                        # connect yaml commands to selenium driver commands
-                        if command == 'set_window_size':
-                            if type(argument) is list:
-                                driver.set_window_size(int(argument[0]),
-                                                       int(argument[1]))
-                            if type(argument) is str:
-                                seperator = argument.find('x')
-                                width = argument[0:seperator]
-                                height = argument[-(seperator - 1):]
-                                driver.set_window_size(width, height)
-                        elif command == 'foreach':
-                            class_name = None
-                            print_href = None
-                            if type(argument) is list:
-                                for arg in argument:
-                                    line_num += 1
-                                    key = list(arg.keys())[0]
-                                    value = list(arg.values())[0]
-                                    print(line_num, '|', end='')
-                                    print('    - ' + key + ':\t' +
-                                          '\'' + value + '\'')
-                                    if key == 'class':
-                                        self.select = driver.find_element_by_class_name(value)
-                                        class_name = value
-                                    if key == 'print_href':
-                                        print_href = True
-                                if type(class_name) is not None and print_href is True:
-                                    elements = driver.find_elements_by_class_name(class_name)
-                                    for element in elements:
-                                        print(element.get_attribute('href'))
-                        elif (command == 'get' or
-                              command == 'goto' or
-                              command == 'go'):
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                driver.get(argument)
-                        elif command == 'save_screenshot':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                driver.save_screenshot(argument)
-                        elif command == 'select':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                if argument[:1] == '#':
-                                    self.select = driver.find_element_by_id(argument)
-                                elif argument[:1] == '.':
-                                    self.select = driver.find_element_by_class_name(argument)
-                                else:
-                                    self.select = driver.find_element_by_name(argument)
-                        elif command == 'select_by_id':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_id(argument)
-                        elif command == 'select_by_class':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_class_name(argument)
-                        elif command == 'select_by_name':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_name(argument)
-                        elif command == 'select_by_value':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_value(argument)
-                        elif command == 'select_by_xpath':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_xpath(argument)
-                        elif command == 'select_by_tagname':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                self.select = driver.find_element_by_tagname(argument)
-                        elif command == 'deselect':
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                driver.dselect_all()
-                        elif command == 'clear':
-                            driver.clear()
-                        # TODO: add support for special keys
-                        elif command == 'send_keys':
-                            if type(argument) is list:
-                                for arg in argument:
-                                    self.select.send_keys(argument)
-                            if type(argument) is str:
-                                self.select.send_keys(argument)
-                        elif command == 'submit':
-                            if type(argument) is None:
-                                if type(self.select) is None:
-                                    print('Error: submit: Nothing is selected.')
-                                try:
-                                    self.select.submit()
-                                except NoSuchElementException as error:
-                                    print(str(error))
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                if argument[:1] == '#':
-                                    self.select =driver.find_element_by_id(argument)
-                                elif argument[:1] == '.':
-                                    self.select =driver.find_element_by_class(argument)
-                                else:
-                                    self.select = driver.find_element_by_name(argument)
-                                try:
-                                    self.select.submit()
-                                except NoSuchElementException as error:
-                                    print(str(error))
-                            try:
-                                self.select.submit()
-                            except NoSuchElementException as error:
-                                print(str(error))
-                        elif (command == 'forward' or
-                              command == 'forwards'):
-                            driver.forward()
-                        elif (command == 'back' or
-                              command == 'backward' or
-                              command == 'backwards'):
-                            driver.back()
-                        elif (command == 'print_url' or
-                              command == 'current_url'):
-                            print(driver.current_url)
-                        elif command == 'click':
-                            if type(argument) is None:
-                                self.select.click()
-                            if type(argument) is list:
-                                argument = argument[0]
-                            if type(argument) is str:
-                                if argument[:1] == '#':
-                                    self.select =driver.find_element_by_id(argument)
-                                elif argument[:1] == '.':
-                                    self.select =driver.find_element_by_class(argument)
-                                else:
-                                    self.select = driver.find_element_by_name(argument)
-                                self.select.click()
+        '''
+        uses interpreter to run commands
+        '''
 
-            except WebDriverException as error:
-                print("Web Driver Error:" + str(error))
-            finally:
-                driver.quit()
+        try:
+            for script in self.scripts:
+                for script_name in script.keys():
+                    line = '_' * 80
+                    run_text = ('\n%s\n\nRunning script %s\n%s' %
+                                (line, script_name, line))
+                    self.logger.debug(run_text)
+                    try:
+                        for commands in script.values():
+                            for com in commands:
+                                self.logger.info(self.interpreter.execute(com))
+
+                    except WebDriverException as error:
+                        self.logger.error("Web Driver Error:" + str(error))
+        finally:
+            self.driver.quit()
 
         
 def main():
+    '''
+    execute wal as a program when calling wal directly
+    '''
+
     wal = Wal()
     wal.run()
 
