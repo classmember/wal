@@ -13,6 +13,9 @@ from selenium.common.exceptions import *
 from selenium.webdriver.common.action_chains import ActionChains
 
 class Wal(object):
+    '''
+    web automation layer
+    '''
     def __init__(self):
         '''
         Set up wal. Use -h to see available commands.
@@ -147,7 +150,9 @@ class Wal(object):
                                     elements = driver.find_elements_by_class_name(class_name)
                                     for element in elements:
                                         print(element.get_attribute('href'))
-                        elif command == 'get':
+                        elif (command == 'get' or
+                              command == 'goto' or
+                              command == 'go'):
                             if type(argument) is list:
                                 argument = argument[0]
                             if type(argument) is str:

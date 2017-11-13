@@ -1,3 +1,6 @@
+#!/usr/local/bin/wal -vv
+# prints out search results for 'test' on duck duck go
+
 - set_window_size: '1366x900'
 - get: 'http://duckduckgo.com/'
 - click: 'q'

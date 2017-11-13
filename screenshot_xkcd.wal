@@ -1,0 +1,4 @@
+#!/usr/local/bin/wal -vv
+
+- get: 'http://xkcd.com/'
+- save_screenshot: 'screen.png'
