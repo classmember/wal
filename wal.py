@@ -9,6 +9,7 @@ import os
 import sys
 import yaml
 import logging
+import signal
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import *
@@ -557,6 +558,7 @@ class Wal(object):
                     except WebDriverException as error:
                         self.logger.error("Web Driver Error:" + str(error))
         finally:
+            self.driver.service.process.send_signal(signal.SIGTERM)
             self.driver.quit()
 
         
