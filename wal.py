@@ -505,8 +505,24 @@ class Wal(object):
         driver.get(DEFAULT['homepage'])
         driver.set_window_size(DEFAULT['screen_width'],
                                DEFAULT['screen_height'])
+
+        # add functions from ActionChains
         actions = ActionChains(driver)
         driver.click = actions.click
+        driver.click_and_hold = actions.click_and_hold
+        driver.context_click = actions.context_click
+        driver.double_click = actions.double_click
+        driver.drag_and_drop = actions.drag_and_drop
+        driver.drag_and_drop_by_offset = actions.drag_and_drop_by_offset
+        driver.key_down = actions.key_down
+        driver.key_up = actions.key_up
+        driver.move_by_offset = actions.move_by_offset
+        driver.move_to_element = actions.move_to_element
+        driver.move_to_element_with_offset = actions.move_to_element_with_offset
+        driver.perform = actions.perform
+        driver.release = actions.release
+        driver.send_keys = actions.send_keys
+        driver.send_keys_to_element = actions.send_keys_to_element
 
         return driver
 
