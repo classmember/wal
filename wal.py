@@ -8,6 +8,7 @@ import argparse
 import os
 import sys
 import yaml
+import time
 import logging
 import signal
 from selenium import webdriver
@@ -68,6 +69,7 @@ class Interpreter(object):
                 'select_by_xpath': select_by_xpath,
                 'send_keys': send_keys,
                 'set_window_size': set_window_size,
+                'sleep': _sleep_,
                 'submit': submit}
 
 
@@ -374,6 +376,24 @@ def select_by_name(wal, argument):
         wal.select = wal.driver.find_element_by_name(argument)
 
     return 'selected element %s by name' % argument
+
+
+def _sleep_(wal, argument):
+    '''
+    sleeps for the amount of seconds specified
+    '''
+
+    sleep_time = 0
+    if type(argument) is list:
+        argument = argument[0]
+
+    try: 
+        sleep_time = int(argument)
+    except ValueError:
+        pass
+    time.sleep(int(sleep_time))
+
+    return 'slept for: %s seconds' % sleep_time
 
 
 def submit(wal, argument):
