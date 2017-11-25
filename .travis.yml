@@ -6,3 +6,8 @@ install:
   - pip3.6 install -r requirements.txt
 script:
   - python3 --version
+  - cd wal
+  - cp wal.py wal
+  - chmod 0755 wal
+  - sudo mv wal /usr/local/bin/wal
+  - ./duckduckgo.wal
