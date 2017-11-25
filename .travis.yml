@@ -9,4 +9,4 @@ script:
   - cp wal.py wal
   - chmod 0755 wal
   - sudo mv wal /usr/local/bin/wal
-  - ./duckduckgo.wal
+  - ./examples/duckduckgo.wal
