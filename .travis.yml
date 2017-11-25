@@ -2,7 +2,7 @@ language: python
 sudo: required
 python:
   - 2.7
-  - 3.6
+  - 3.5
 install:
   - pip2.7 install -r requirements.txt
 script:
