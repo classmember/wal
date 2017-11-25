@@ -2,6 +2,8 @@
 
 ### The internet works for you.
 
+[![Build Status](https://travis-ci.org/classmember/wal.svg?branch=master)](https://travis-ci.org/classmember/wal)
+
 ### Features:
 * automate web tasks
 * organize tasks
