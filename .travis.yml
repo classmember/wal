@@ -6,4 +6,4 @@ python:
 install:
   - pip2.7 install -r requirements.txt
 script:
-- python3.6 -v
+- python -v
