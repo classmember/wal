@@ -33,8 +33,7 @@ setup(
         'selenium==2.53.2',
         'simplejson==3.10.0',
         'six==1.10.0',
-        'urllib3==1.15.1']
-    home-page: 'https://fasterdevops.github.io/'
-    download-url = 'https://github.com/classmember/wal/archive/master.zip'
-    requires-python >= '3.4'
+        'urllib3==1.15.1'],
+    url = 'https://fasterdevops.github.io/',
+    download_url = 'https://github.com/classmember/wal/archive/master.zip'
 )
