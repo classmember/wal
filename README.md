@@ -9,6 +9,11 @@
 * organize tasks
 * easily control the tasks
 
+### Installation:
+```sh
+pip install walscript
+```
+
 ### Example script to list search results:
 ```wal
 - go: duckduckgo.com

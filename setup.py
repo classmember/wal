@@ -1,13 +1,13 @@
 '''
-setup.py for wal
+setup.py for walscript
 '''
 from setuptools import setup, find_packages
 import os
 
 
 setup(
-    name = 'wal',
-    version = '0.1',
+    name = 'walscript',
+    version = '0.1.1',
     description = 'web automation layer',
     long_description = (
         'a browser automation tool with a yaml front end '
@@ -35,5 +35,7 @@ setup(
         'six==1.10.0',
         'urllib3==1.15.1'],
     url = 'https://fasterdevops.github.io/',
-    download_url = 'https://github.com/classmember/wal/archive/master.zip'
+    download_url = 'https://github.com/classmember/wal/archive/master.zip',
+    packages=['walscript'],
+    package_dir={'walscript': 'walscript'}
 )
