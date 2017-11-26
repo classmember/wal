@@ -11,11 +11,12 @@
 
 ### Installation:
 ```sh
-pip install walscript
+sudo pip install walscript
 ```
 
 ### Example script to list search results:
 ```wal
+#!/usr/local/bin/wal -vv
 - go: duckduckgo.com
 - click: q
 - send_keys: test
