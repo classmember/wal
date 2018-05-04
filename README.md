@@ -33,7 +33,7 @@ sudo pip install walscript
 * add REST API
 * organize scripts together into a repository
 * create great support and documentation for DevOps platforms
-* createa a micro-service server image to deploy as an application in enterprise networks
+* create a micro-service server image to deploy as an application in enterprise networks
 
 ### Requirements:
 * written in [python 3.6](https://www.python.org/)
