@@ -48,7 +48,7 @@ setup(
 	'Topic :: Internet'],
     keywords = 'web automation layer',
     install_requires = [
-        'PyYAML==3.12',
+        'PyYAML==5.1',
         'selenium==2.53.2',
         'simplejson==3.10.0',
         'six==1.10.0',
