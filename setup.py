@@ -52,7 +52,7 @@ setup(
         'selenium==2.53.2',
         'simplejson==3.10.0',
         'six==1.10.0',
-        'urllib3==1.15.1'],
+        'urllib3==1.24.2'],
     url = 'https://fasterdevops.github.io/',
     download_url = 'https://github.com/classmember/wal/archive/master.zip',
     packages=['walscript'],
